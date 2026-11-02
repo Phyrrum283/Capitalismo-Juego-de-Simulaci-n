@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capitalismo: El juego</title>
+<style>
+:root{
+  --cream:#F6F0E5;--panel:#FFFDF8;--ink:#172033;--red:#C74C3D;
+  --gold:#E7B84B;--green:#28765B;--blue:#315B88;--muted:#6b7280;
+}
+*{box-sizing:border-box} body{margin:0;background:var(--cream);color:var(--ink);
+font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif} button,input,select{font:inherit}
+button{cursor:pointer}.screen{min-height:100vh}.hidden{display:none!important}
+.cover{display:grid;place-items:center;text-align:center;padding:32px;
+background:radial-gradient(circle at 50% 20%,#315b8833,transparent 45%),#172033;color:white}
+.cover h1{font:700 clamp(3rem,8vw,6.5rem) Georgia,serif;margin:0}.cover p{font-size:1.2rem}
+.cover .coins{font-size:4rem;margin:15px}.primary{background:var(--red);color:white;border:0;border-radius:14px;
+padding:15px 24px;font-weight:800;box-shadow:0 8px 18px #0002}.secondary{background:white;color:var(--ink);
+border:2px solid #ddd;border-radius:12px;padding:11px 16px;font-weight:700}
+.setup{max-width:900px;margin:auto;padding:35px 20px}.panel{background:var(--panel);border:1px solid #e4dccb;
+border-radius:20px;padding:24px;box-shadow:0 10px 30px #17203312}.setup h1{font:700 2.6rem Georgia,serif}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}.field{display:flex;flex-direction:column;gap:7px}
+input,select{padding:12px;border:1px solid #cfc7b8;border-radius:10px;background:white}.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:10px 14px;border:2px solid #ddd;border-radius:10px;background:white}.chip.active{border-color:var(--red);background:#fff0ed}
+header{position:sticky;top:0;z-index:4;background:#172033;color:white;padding:12px 18px;display:flex;gap:15px;
+align-items:center;justify-content:space-between;box-shadow:0 3px 15px #0003}.brand{font:700 1.3rem Georgia,serif}
+.board{max-width:1500px;margin:auto;padding:18px;display:grid;grid-template-columns:280px minmax(330px,1fr) 310px;gap:18px}
+.card,.company,.history,.rules{background:var(--panel);border:1px solid #e3dccf;border-radius:18px;box-shadow:0 7px 22px #17203310}
+.company{padding:14px;margin-bottom:12px}.company.active{outline:3px solid var(--gold)}
+.company h3{margin:0 0 8px}.stat{margin:7px 0}.statline{display:flex;justify-content:space-between;font-size:.82rem}
+.bar{height:8px;background:#e8e2d7;border-radius:99px;overflow:hidden}.fill{height:100%;background:var(--blue)}
+.center{display:flex;flex-direction:column;gap:15px}.status{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.card{padding:25px;min-height:500px;display:flex;flex-direction:column}.tag{display:inline-block;padding:6px 10px;border-radius:999px;
+background:#315b8815;color:var(--blue);font-weight:800;font-size:.8rem}.tag.op{background:#28765b18;color:var(--green)}
+.tag.ev{background:#315b8820;color:var(--blue)}.card h2{font:700 2.3rem Georgia,serif;margin:16px 0 10px}.icon{font-size:4rem}
+.options{display:grid;gap:10px;margin-top:auto}.option{text-align:left;padding:15px;border:2px solid #ddd4c6;background:white;border-radius:14px}
+.option:hover{border-color:var(--red);transform:translateY(-1px)}.option b{display:block;margin-bottom:6px}.effects{font-size:.82rem;color:var(--muted)}
+.history{padding:15px;max-height:calc(100vh - 130px);overflow:auto}.history h3{margin-top:0}.log{padding:10px 0;border-bottom:1px solid #e6dfd4;font-size:.82rem}
+.drawer{position:fixed;inset:auto 18px 18px auto;width:min(420px,calc(100% - 36px));z-index:10}
+.notice{background:#172033;color:white;border-radius:14px;padding:14px;box-shadow:0 12px 30px #0004}.positive{color:#9fe0c1}.negative{color:#ffaaa0}
+@keyframes cardIn{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(.92);opacity:.4}60%{transform:scale(1.04)}100%{transform:scale(1);opacity:1}}
+@keyframes trophy{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px) rotate(-2deg)}}
+@keyframes cardFlip{0%{opacity:0;transform:perspective(900px) rotateY(90deg) scale(.92)}60%{transform:perspective(900px) rotateY(-8deg) scale(1.02)}100%{opacity:1;transform:perspective(900px) rotateY(0) scale(1)}}
+@keyframes statChange{0%{transform:scale(1)}35%{transform:scale(1.13);box-shadow:0 0 0 5px #e7b84b55}100%{transform:scale(1);box-shadow:none}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.card.reveal{animation:cardFlip .65s cubic-bezier(.2,.8,.2,1) both}.stat.changed{animation:statChange .65s ease both}.company.bankrupt{filter:grayscale(.8);opacity:.72}.bankrupt-badge{display:inline-block;background:#c74c3d;color:#fff;border-radius:999px;padding:4px 8px;font-size:.7rem;font-weight:800;margin-left:5px}.crisis{border:2px solid var(--red)!important;animation:shake .35s ease}.bankrupt-modal .panel{max-width:620px;text-align:center}
+.card{animation:cardIn .35s ease both}.company.active{animation:pop .3s ease both}.final-trophy{animation:trophy 1.5s ease-in-out infinite}
+.final-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin:20px 0}
+.final-company{background:var(--panel);border:1px solid #e3dccf;border-radius:18px;padding:18px;box-shadow:0 7px 22px #17203310}
+.final-company.winner{border:2px solid var(--gold);box-shadow:0 10px 28px #17203318}
+.final-company h3{margin-top:0}.final-score{font-size:1.3rem;font-weight:900;margin:8px 0 14px}
+.final-stat{margin:8px 0}.actions-box{background:var(--panel);border:1px solid #e3dccf;border-radius:18px;padding:18px;margin-top:20px;overflow:auto}
+.actions-table{width:100%;border-collapse:collapse;min-width:700px}
+.actions-table th,.actions-table td{padding:10px 9px;border-bottom:1px solid #e6dfd4;text-align:left;vertical-align:top;font-size:.86rem}
+.actions-table th{background:#172033;color:white;position:sticky;top:0}.sound-toggle{margin-left:6px}
+footer{max-width:1500px;margin:auto;padding:0 18px 30px;color:#6b7280;font-size:.8rem}
+.modal{position:fixed;inset:0;background:#172033aa;display:grid;place-items:center;padding:20px;z-index:20}.modal .panel{max-width:850px;max-height:90vh;overflow:auto}
+.rank{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:12px;border-bottom:1px solid #ddd}
+@media(max-width:1050px){.board{grid-template-columns:1fr 1.4fr}.history{grid-column:1/-1;max-height:260px}}
+@media(max-width:700px){.board{grid-template-columns:1fr}.history{grid-column:auto}.card{min-height:0}.card h2{font-size:1.8rem}header{flex-wrap:wrap}}
+.quiz-options{display:grid;gap:10px;margin:18px 0}.quiz-options button{text-align:left}
+.crisis-alert{animation:pop .5s ease;border:2px solid #c74c3d!important;box-shadow:0 0 0 4px #c74c3d22}
+
+.special-event{animation:cardIn .35s ease both;text-align:center}.special-event .quiz-options{margin-top:18px}
+.special-event .icon{font-size:2.4rem}
+''</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const NAMES=["Horizonte","Sur","Delta","Nexo","Pampa","Futuro"];
+const DEFS=["Capital","Empleo","Producción","Bienestar social","Ambiente","Influencia","Estabilidad"];
+const ICONS=["💰","👷","🏭","🤝","🌱","📣","🛡️"];
+let state=null;
+
+const cards=[
+["automatizar","Decisión","🤖","Automatizar la producción","Una nueva tecnología promete producir más rápido, pero puede reducir puestos de trabajo.",
+ [["Automatizar parcialmente",{capital:-2,produccion:5,empleo:-2,ambiente:-1}],
+ ["Automatizar por completo",{capital:3,produccion:8,empleo:-5,bienestar:-2,estabilidad:-1}],
+ ["Mantener el sistema actual",{capital:-1,produccion:1,empleo:2,estabilidad:2}]]],
+["salarios","Decisión","🤝","Negociación salarial","Los trabajadores reclaman mejores salarios.",
+ [["Aceptar el aumento",{capital:-3,bienestar:5,empleo:1,estabilidad:2}],
+ ["Negociar un aumento parcial",{capital:-1,bienestar:2,estabilidad:1}],
+ ["Rechazar el reclamo",{capital:2,bienestar:-4,estabilidad:-3,produccion:-1}]]],
+["ambiente","Decisión","🌱","Costos ambientales","Una auditoría detecta prácticas contaminantes en la empresa.",
+ [["Invertir en mejoras",{capital:-4,ambiente:6,estabilidad:2}],
+ ["Corregir lo más urgente",{capital:-2,ambiente:3}],
+ ["Postergar la inversión",{capital:2,ambiente:-5,influencia:-2}]]],
+["expandir","Decisión","🏗️","Ampliar el negocio","Aparece la oportunidad de ampliar la capacidad productiva.",
+ [["Expandirse agresivamente",{capital:-5,produccion:7,empleo:4,estabilidad:-2}],
+ ["Crecer de forma gradual",{capital:-2,produccion:4,empleo:2,estabilidad:2}],
+ ["No expandirse",{capital:1,estabilidad:1}]]],
+["precios","Decisión","🏷️","Aumentar los precios","Los costos subieron y la empresa evalúa trasladarlos a los consumidores.",
+ [["Subir mucho",{capital:5,bienestar:-5,influencia:-2}],
+ ["Subir moderadamente",{capital:2,bienestar:-2}],
+ ["Mantener los precios",{capital:-3,bienestar:2,influencia:1}]]],
+["capacitacion","Decisión","🎓","Capacitación laboral","Una capacitación puede mejorar las capacidades del personal.",
+ [["Capacitar a todo el personal",{capital:-3,produccion:5,empleo:1,bienestar:3}],
+ ["Capacitación selectiva",{capital:-1,produccion:3}],
+ ["No capacitar",{capital:1,produccion:-2,estabilidad:-1}]]],
+["credito","Decisión","🏦","Acceso al crédito","El banco ofrece financiamiento para un nuevo proyecto.",
+ [["Tomar un crédito grande",{capital:5,produccion:6,estabilidad:-4}],
+ ["Tomar un crédito pequeño",{capital:2,produccion:3,estabilidad:-1}],
+ ["Rechazar el crédito",{capital:0,estabilidad:2}]]],
+["impuestos","Decisión","🏛️","Pagar impuestos","La empresa debe cumplir con sus obligaciones fiscales.",
+ [["Pagar todo a tiempo",{capital:-4,influencia:3,estabilidad:3,bienestar:2}],
+ ["Negociar un plan",{capital:-2,influencia:1,estabilidad:1}],
+ ["Evitar el pago",{capital:4,influencia:-5,estabilidad:-5}]]],
+["mercado","Oportunidad","🌎","Nuevo mercado","Una oportunidad comercial permite vender en una nueva región.",
+ [["Entrar inmediatamente",{capital:-3,produccion:4,influencia:4,estabilidad:-2}],
+ ["Estudiar primero",{capital:-1,influencia:2,estabilidad:2}],
+ ["No entrar",{capital:1,estabilidad:1}]]],
+["cooperacion","Oportunidad","🤝","Cooperación entre empresas","Otra empresa propone compartir recursos y conocimientos.",
+ [["Aceptar la alianza",{capital:2,produccion:3,influencia:3,estabilidad:2}],
+ ["Cooperar en un proyecto",{capital:0,produccion:2,influencia:2}],
+ ["Competir por separado",{capital:2,influencia:-1,estabilidad:-1}]]],
+["circular","Oportunidad","♻️","Economía circular","Se puede reutilizar parte de los residuos del proceso productivo.",
+ [["Transformar todo el proceso",{capital:-4,ambiente:7,produccion:2,empleo:2}],
+ ["Reciclar parcialmente",{capital:-1,ambiente:4}],
+ ["No cambiar",{capital:2,ambiente:-3}]]],
+["escandalo","Especial","📰","Escándalo público","Una noticia negativa pone a la empresa bajo la mirada de la comunidad.",
+ [["Dar explicaciones y reparar",{capital:-3,influencia:5,bienestar:3,estabilidad:2}],
+ ["Emitir un comunicado",{capital:-1,influencia:2}],
+ ["Ignorar el escándalo",{capital:1,influencia:-6,estabilidad:-4}]]],
+["recesion","Evento global","📉","Recesión económica","La actividad económica cae y se reduce la demanda.",
+ [["Proteger el empleo",{capital:-3,empleo:3,bienestar:2,estabilidad:2}],
+ ["Reducir costos",{capital:3,empleo:-3,bienestar:-2}],
+ ["Invertir para salir fortalecidos",{capital:-5,produccion:4,influencia:2,estabilidad:1}]]],
+["energia","Evento global","⚡","Crisis energética","Los costos de energía aumentan de manera repentina.",
+ [["Ahorrar energía",{capital:-2,produccion:-1,ambiente:4,estabilidad:2}],
+ ["Pagar el aumento",{capital:-5,produccion:1}],
+ ["Reducir producción",{capital:2,produccion:-4,empleo:-2,ambiente:2}]]],
+["alimentos","Evento global","🥖","Aumento del costo de alimentos","El encarecimiento de alimentos afecta a trabajadores y consumidores.",
+ [["Apoyar a los trabajadores",{capital:-3,bienestar:4,empleo:1,estabilidad:2}],
+ ["Compensación parcial",{capital:-1,bienestar:2}],
+ ["No intervenir",{capital:2,bienestar:-4,estabilidad:-2}]]],
+["logistica","Evento global","🚚","Interrupción logística","Una interrupción del transporte dificulta recibir insumos.",
+ [["Buscar rutas alternativas",{capital:-3,produccion:2,estabilidad:3}],
+ ["Reducir operaciones",{capital:2,produccion:-4,empleo:-1}],
+ ["Esperar",{capital:-2,produccion:-5,estabilidad:-3}]]],
+["innovacion","Oportunidad","💡","Innovación tecnológica","Una innovación puede mejorar la eficiencia de la empresa.",
+ [["Invertir fuerte",{capital:-4,produccion:7,ambiente:2,influencia:2}],
+ ["Probar a pequeña escala",{capital:-1,produccion:3}],
+ ["No invertir",{capital:1,estabilidad:1}]]],
+["conflicto","Especial","⚠️","Conflicto laboral","Una disputa interna amenaza con paralizar parte de la actividad.",
+ [["Negociar y mediar",{capital:-2,bienestar:4,estabilidad:5}],
+ ["Conceder rápidamente",{capital:-4,bienestar:5,empleo:2}],
+ ["Endurecer la postura",{capital:2,bienestar:-5,estabilidad:-6,produccion:-2}]]],
+["regulacion","Evento","📜","Cambio de regulación","Una nueva norma exige cambios en las prácticas empresariales.",
+ [["Adaptarse de inmediato",{capital:-4,ambiente:4,estabilidad:4,influencia:2}],
+ ["Adaptación gradual",{capital:-2,ambiente:2,estabilidad:1}],
+ ["Resistirse",{capital:2,influencia:-4,estabilidad:-4}]]],
+["infraestructura","Oportunidad","🏢","Inversión en infraestructura","Hay una oportunidad para mejorar instalaciones y capacidad.",
+ [["Construir ahora",{capital:-5,produccion:7,empleo:3,estabilidad:2}],
+ ["Mejorar por etapas",{capital:-2,produccion:4,empleo:1,estabilidad:1}],
+ ["Esperar",{capital:1}]]],
+["demanda","Evento global","📉","Caída de la demanda","Los consumidores compran menos durante este período.",
+ [["Bajar precios",{capital:-2,bienestar:3,produccion:-1}],
+ ["Mantener precios",{capital:-4,produccion:-3}],
+ ["Diversificar productos",{capital:-3,produccion:2,influencia:3,estabilidad:2}]]],
+["publicidad","Decisión","📣","Campaña publicitaria","Una campaña puede aumentar la presencia de la empresa en el mercado.",
+ [["Campaña masiva",{capital:-4,influencia:7,produccion:2}],
+ ["Campaña focalizada",{capital:-2,influencia:4}],
+ ["No hacer campaña",{capital:1,influencia:-1}]]],
+["abastecimiento","Evento global","📦","Problemas de abastecimiento","Los proveedores no pueden garantizar el volumen habitual de insumos.",
+ [["Buscar nuevos proveedores",{capital:-3,produccion:2,estabilidad:3}],
+ ["Aceptar insumos más caros",{capital:-4,produccion:1}],
+ ["Reducir operaciones",{capital:2,produccion:-5,empleo:-2}]]],
+["social","Oportunidad","❤️","Programa de responsabilidad social","La empresa puede invertir en su comunidad.",
+ [["Programa amplio",{capital:-4,bienestar:7,influencia:4,estabilidad:2}],
+ ["Programa moderado",{capital:-2,bienestar:4,influencia:2}],
+ ["No invertir",{capital:1,bienestar:-2}]]]
+];
+
+function clamp(n){return Math.max(0,Math.min(50,n))}
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function fmtEffects(e){return Object.entries(e).map(([k,v])=>`${DEFS[["capital","empleo","produccion","bienestar","ambiente","influencia","estabilidad"].indexOf(k)]||k} ${v>0?"+":""}${v}`).join(" · ")}
+function score(c){return Math.round(1.3*c.capital+c.empleo+c.produccion+1.1*c.bienestar+1.1*c.ambiente+.7*c.influencia+c.estabilidad+(c.bonusScore||0))}
+
+
+const economyQuestions=[
+ {q:"¿Qué suele ocurrir con el poder adquisitivo cuando hay inflación?",o:["Disminuye","Aumenta siempre","No cambia nunca"],c:0,p:5},
+ {q:"¿Qué es un impuesto?",o:["Un pago obligatorio al Estado","Un premio empresarial","Un préstamo entre empresas"],c:0,p:4},
+ {q:"¿Qué puede ocurrir durante una recesión?",o:["Puede caer la actividad económica","Todos producen más","Los precios desaparecen"],c:0,p:5},
+ {q:"¿Qué busca una empresa al diversificar?",o:["Reducir su dependencia de una sola actividad","Eliminar toda competencia","Dejar de producir"],c:0,p:4},
+ {q:"Si aumenta mucho la demanda y la oferta no cambia, ¿qué puede pasar con el precio?",o:["Puede aumentar","Siempre baja","Desaparece"],c:0,p:4},
+ {q:"¿Qué representa el desempleo?",o:["Personas que buscan trabajo y no lo tienen","Empresas sin productos","Precios que bajan"],c:0,p:5},
+ {q:"¿Qué es la productividad?",o:["La relación entre lo producido y los recursos utilizados","El dinero guardado por una empresa","El precio de una acción"],c:0,p:4},
+ {q:"¿Qué puede favorecer una inversión en infraestructura?",o:["La actividad productiva y económica","La desaparición de impuestos","Que todos los precios sean iguales"],c:0,p:5}
+];
+let specialEvent=null;
+
+function showEconomyEvent(){
+ if(state.locked||!state.active)return;
+ state.locked=true;
+ const q=economyQuestions[Math.floor(Math.random()*economyQuestions.length)];
+ specialEvent={type:"economy",data:q};
+ const modal=document.createElement("div"); modal.id="specialModal"; modal.className="modal open";
+ modal.innerHTML=`<div class="modal-card special-event">
+ <div class="icon">🧠</div><h2>Evento económico</h2>
+ <p>${q.q}</p>
+ <div class="quiz-options">${q.o.map((x,i)=>`<button class="secondary" onclick="answerEconomy(${i})">${String.fromCharCode(65+i)}) ${x}</button>`).join("")}</div>
+ <p class="muted">Respuesta correcta: +${q.p} puntos. Respuesta incorrecta: −${q.p} puntos.</p>
+ </div>`;
+ document.body.appendChild(modal);
+}
+function answerEconomy(i){
+ const q=specialEvent.data,p=state.players[state.turn],correct=i===q.c;
+ p.bonusScore=(p.bonusScore||0)+(correct?q.p:-q.p);
+ beep(correct?"good":"bad");
+ const modal=document.getElementById("specialModal");
+ modal.innerHTML=`<div class="modal-card special-event">
+ <div class="icon">${correct?"🎉":"😅"}</div>
+ <h2>${correct?"¡Respuesta correcta!":"¡Respuesta incorrecta!"}</h2>
+ <p>${correct?`Tu empresa gana <b>+${q.p} puntos</b>. Bien jugado.`:`Tu empresa pierde <b>${q.p} puntos</b>. El mercado te mira con una ceja levantada. 😂`}</p>
+ <button class="primary" onclick="closeSpecial()">Continuar</button>
+ </div>`;
+}
+function closeSpecial(){document.getElementById("specialModal")?.remove();specialEvent=null;state.locked=false;renderGame();}
+
+const miniGames=[
+ {name:"📈 Subida de precios",text:"El precio de tu producto subió 10%. ¿Qué opción representa mejor una posible consecuencia?",o:["Puede caer la demanda","La demanda siempre aumenta","No cambia nada"],c:0,r:3},
+ {name:"💰 Decisión de inversión",text:"Tenés $10 y podés invertirlos para producir más. ¿Qué concepto representa mejor la situación?",o:["Costo de oportunidad","Inflación cero","Impuesto"],c:0,r:4},
+ {name:"🏭 Productividad",text:"Dos empresas producen lo mismo, pero una usa menos recursos. ¿Cuál es más productiva?",o:["La que usa menos recursos","La que usa más recursos","Son siempre iguales"],c:0,r:4},
+ {name:"🛒 Oferta y demanda",text:"Hay pocas unidades de un producto y mucha gente quiere comprarlo. ¿Qué presión puede aparecer?",o:["Presión al alza sobre el precio","El precio necesariamente baja","No hay mercado"],c:0,r:3}
+];
+function showMiniGame(){
+ if(state.locked||!state.active)return;
+ state.locked=true;
+ const m=miniGames[Math.floor(Math.random()*miniGames.length)];
+ specialEvent={type:"mini",data:m};
+ const modal=document.createElement("div");modal.id="specialModal";modal.className="modal open";
+ modal.innerHTML=`<div class="modal-card special-event"><div class="icon">🎮</div>
+ <h2>${m.name}</h2><p>${m.text}</p>
+ <div class="quiz-options">${m.o.map((x,i)=>`<button class="secondary" onclick="answerMini(${i})">${String.fromCharCode(65+i)}) ${x}</button>`).join("")}</div>
+ <p class="muted">Acertá para ganar puntos extra.</p></div>`;
+ document.body.appendChild(modal);
+}
+function answerMini(i){
+ const m=specialEvent.data,p=state.players[state.turn],correct=i===m.c;
+ p.bonusScore=(p.bonusScore||0)+(correct?m.r:-2);
+ beep(correct?"good":"bad");
+ const modal=document.getElementById("specialModal");
+ modal.innerHTML=`<div class="modal-card special-event"><div class="icon">${correct?"🏆":"😂"}</div>
+ <h2>${correct?"¡Bien!":"¡Ups!"}</h2>
+ <p>${correct?`Ganás <b>+${m.r} puntos</b>.`:`Perdés <b>2 puntos</b>. Al menos no quebraste... todavía. 😏`}</p>
+ <button class="primary" onclick="closeSpecial()">Continuar</button></div>`;
+}
+
+function crisisWarning(p){
+  const low=["capital","empleo","produccion","bienestar","ambiente","influencia","estabilidad"].filter(k=>p[k]<=3);
+  if(!low.length)return "";
+  return `<div class="crisis-alert" style="padding:12px;border-radius:12px;margin:10px 0"><b>⚠️ CRISIS</b><br>Tu empresa tiene ${low.length} estadística(s) en nivel crítico. Cuidala o podría quebrar.</div>`;
+}
+
+function showQuiz(){
+  if(state.locked||!state.active)return;
+  state.locked=true;
+  const q=quizCards[Math.floor(Math.random()*quizCards.length)];
+  quizPending=q;
+  document.getElementById("quizModal")?.remove();
+  const modal=document.createElement("div");modal.id="quizModal";modal.className="modal open";
+  modal.innerHTML=`<div class="modal-card"><h2>🧠 ${q.title}</h2><p>${q.q}</p>
+  <div class="quiz-options">${q.opts.map((x,i)=>`<button class="secondary quiz-choice" data-i="${i}">${String.fromCharCode(65+i)}) ${x}</button>`).join("")}</div>
+  <p class="muted">Si respondés bien, tu empresa recibe una recompensa. Si respondés mal... bueno, al menos no perdés nada. 😏</p></div>`;
+  document.body.appendChild(modal);
+  modal.querySelectorAll(".quiz-choice").forEach(b=>b.onclick=()=>answerQuiz(Number(b.dataset.i)));
+}
+function answerQuiz(i){
+  const q=quizPending,p=state.players[state.turn];
+  const modal=document.getElementById("quizModal");
+  if(i===q.correct){
+    Object.entries(q.effects).forEach(([k,v])=>p[k]=Math.min(50,Math.max(0,p[k]+v)));
+    beep("good");
+    alert(`¡Correcto! 🧠\nTu empresa recibe una recompensa.`);
+  }else{
+    beep("bad");
+    alert("Incorrecto. 😂\nTranquilo: no perdés estadísticas... pero el mercado acaba de juzgarte un poquito.");
+  }
+  modal?.remove();quizPending=null;state.locked=false;renderGame();
+}
+let audioCtx=null, soundOn=true;
+function beep(type="click"){
+  if(!soundOn)return;
+  try{
+    audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+    const osc=audioCtx.createOscillator(),gain=audioCtx.createGain(),now=audioCtx.currentTime;
+    const freq=type==="card"?680:type==="good"?820:type==="win"?560:type==="bad"?220:520;
+    osc.frequency.setValueAtTime(freq,now);
+    if(type==="win")osc.frequency.exponentialRampToValueAtTime(840,now+.22);
+    gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.06,now+.015);
+    gain.gain.exponentialRampToValueAtTime(.0001,now+(type==="win"?.35:.16));
+    osc.connect(gain);gain.connect(audioCtx.destination);osc.start(now);osc.stop(now+(type==="win"?.38:.18));
+  }catch(e){}
+}
+function toggleSound(){soundOn=!soundOn;const b=document.getElementById("soundToggle");if(b)b.textContent=soundOn?"🔊 Sonido":"🔇 Sonido";}
+function initPlayers(n,names){return names.slice(0,n).map(name=>({name:name||"Empresa",capital:20,empleo:15,produccion:15,bienestar:15,ambiente:15,influencia:10,estabilidad:15}))}
+
+function setup(){
+document.getElementById("app").innerHTML=`<div class="screen setup"><div class="panel"><div class="intro-note"><b>Capitalismo: El juego</b> — Empresas que compiten por oportunidades dentro del mismo mercado. Tomá decisiones, analizá sus consecuencias y buscá el mejor equilibrio entre crecimiento, empleo, bienestar, ambiente e influencia.</div>
+<h1>Capitalismo: El juego</h1><p>Decisiones, poder y economía.</p>
+<div class="field"><b>Cantidad de empresas</b><div class="chips" id="count"></div></div>
+<br><div class="field"><b>Duración</b><div class="chips" id="rounds"></div></div>
+<h2>Nombre de las empresas</h2><div id="names" class="grid"></div><br>
+<button class="primary" id="start">Iniciar partida</button></div></div>`;
+let count=4, rounds=12;
+function chips(){
+document.getElementById("count").innerHTML=[2,3,4,5,6].map(x=>`<button class="chip ${x===count?"active":""}" data-n="${x}">${x}</button>`).join("");
+document.getElementById("rounds").innerHTML=[8,12,16].map(x=>`<button class="chip ${x===rounds?"active":""}" data-r="${x}">${x} rondas</button>`).join("");
+document.querySelectorAll("[data-n]").forEach(b=>b.onclick=()=>{count=+b.dataset.n;chips();names()});
+document.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{rounds=+b.dataset.r;chips()});
+}
+function names(){document.getElementById("names").innerHTML=Array.from({length:count},(_,i)=>`<div class="field"><label>Empresa ${i+1}</label><input id="n${i}" value="${NAMES[i]}"></div>`).join("")}
+chips();names();
+document.getElementById("start").onclick=()=>{state={players:initPlayers(count,Array.from({length:count},(_,i)=>document.getElementById("n"+i).value.trim()||NAMES[i]),rounds),rounds,turn:0,round:1,deck:shuffle(cards),discard:[],active:null,history:[],decisionLog:[],locked:false,bankrupt:new Set()};renderGame()}
+}
+
+function statKeys(){return ["capital","empleo","produccion","bienestar","ambiente","influencia","estabilidad"]}
+function zeroStats(p){return statKeys().filter(k=>p[k]===0)}
+function criticalStats(p){return statKeys().filter(k=>p[k]<=3)}
+function isBankrupt(p){return criticalStats(p).length>=3}
+function bankruptcyReason(p){const z=zeroStats(p);const c=criticalStats(p);return z.length?`llegó a 0 en ${z.map(k=>DEFS[statKeys().indexOf(k)]).join(", ")}`:`acumuló ${c.length} indicadores en niveles críticos`}
+function checkBankruptcies(){const newly=[];state.players.forEach((p,i)=>{if(!state.bankrupt.has(i)&&isBankrupt(p)){state.bankrupt.add(i);newly.push(i);}});return newly}
+function showBankruptcy(i){const p=state.players[i];beep("bad");document.body.insertAdjacentHTML("beforeend",`<div class="modal bankrupt-modal" id="bankruptModal"><div class="panel"><div class="icon">⚠️</div><h2>${p.name} ha quebrado</h2><p>Por ${bankruptcyReason(p)}, la empresa no puede continuar operando durante esta partida.</p><p>Las demás empresas <b>siguen jugando normalmente</b>. Cuando llegue el turno de ${p.name}, será saltado automáticamente.</p><button class="primary" id="closeBankrupt">Continuar</button></div></div>`);document.getElementById("closeBankrupt").onclick=()=>document.getElementById("bankruptModal").remove()}
+function renderGame(){
+const p=state.players[state.turn];
+document.getElementById("app").innerHTML=`<header><div class="brand">🏛️ Capitalismo: El juego</div><div>Ronda ${state.round}/${state.rounds} · Turno ${state.turn+1}/${state.players.length}</div><div><button class="secondary" id="rulesBtn">Reglas</button> <button class="secondary sound-toggle" id="soundToggle">🔊 Sonido</button> <button class="secondary" id="reset">Reiniciar</button></div></header>
+<main class="board"><aside id="companies"></aside><section class="center"><div class="status"><b>Tu empresa: ${p.name}</b><span>${state.deck.length} cartas restantes</span></div><div id="cardArea"></div></section><aside class="history"><h3>📜 Historial</h3><div id="history"></div></aside></main><footer>Los indicadores son unidades abstractas de una simulación educativa.</footer>`;
+renderCompanies();renderCard();
+document.getElementById("reset").onclick=()=>{if(confirm("¿Reiniciar la partida? Se perderá el progreso actual."))setup()};
+document.getElementById("rulesBtn").onclick=rules; document.getElementById("soundToggle").onclick=toggleSound;
+}
+
+function renderCompanies(){
+document.getElementById("companies").innerHTML=state.players.map((p,i)=>`<div class="company ${i===state.turn?"active":""} ${state.bankrupt.has(i)?"bankrupt":""}">
+<h3>${i===state.turn?"⭐ ":""}${p.name} ${state.bankrupt.has(i)?"<span class=\"bankrupt-badge\">QUEBRADA</span>":""}</h3>${["capital","empleo","produccion","bienestar","ambiente","influencia","estabilidad"].map((k,j)=>`<div class="stat"><div class="statline"><span>${ICONS[j]} ${DEFS[j]}</span><b>${p[k]}</b></div><div class="bar"><div class="fill" style="width:${p[k]*2}%"></div></div></div>`).join("")}</div>`).join("");
+}
+function renderCard(){
+let a=document.getElementById("cardArea");
+const p=state.players[state.turn];
+if(!state.active){
+  const critical=criticalStats(p).length;
+  if(critical>0){
+    a.innerHTML=`<div class="card crisis" style="justify-content:center;align-items:center;text-align:center"><div class="icon">🆘</div><h2>Empresa en crisis</h2><p><b>${p.name}</b> tiene indicadores en nivel crítico. No puede robar una carta normal.</p><p>Debe activar una <b>medida de recuperación</b> para intercambiar un recurso y levantar un indicador.</p><div class="options"><button class="option" data-recovery="capital"><b>🏦 Recuperar capital</b><span class="effects">+6 Capital · -4 Estabilidad · -2 Bienestar</span></button><button class="option" data-recovery="empleo"><b>👷 Recuperar empleo</b><span class="effects">+6 Empleo · -4 Capital · -2 Producción</span></button><button class="option" data-recovery="bienestar"><b>🤝 Recuperar bienestar</b><span class="effects">+6 Bienestar · -4 Capital · -2 Influencia</span></button><button class="option" data-recovery="ambiente"><b>🌱 Recuperar ambiente</b><span class="effects">+6 Ambiente · -4 Capital · -2 Producción</span></button></div></div>`;
+    document.querySelectorAll("[data-recovery]").forEach(b=>b.onclick=()=>recover(b.dataset.recovery)); return;
+  }
+  a.innerHTML=`<div class="card reveal" style="justify-content:center;align-items:center;text-align:center"><div class="icon">🃏</div><h2>Es el turno de ${p.name}</h2><p>Robá una carta para conocer la situación que deberá enfrentar la empresa.</p><button class="primary" id="draw">Robar carta</button></div>`;document.getElementById("draw").onclick=draw;return}
+const c=state.active;
+a.innerHTML=`<article class="card reveal"><div><span class="tag ${c[1].includes("Evento")?"ev":c[1]==="Oportunidad"?"op":""}">${c[1]}${c[1].includes("global")?" · AFECTA A TODAS":""}</span>
+<div class="icon">${c[2]}</div><h2>${c[3]}</h2><p>${c[4]}</p></div><div class="options">${c[5].map((o,i)=>`<button class="option" data-opt="${i}"><b>${["A","B","C"][i]}. ${o[0]}</b><span class="effects">${fmtEffects(o[1])}</span></button>`).join("")}</div></article>`;
+document.querySelectorAll("[data-opt]").forEach(b=>b.onclick=()=>choose(+b.dataset.opt));
+}
+function draw(){if(state.locked||state.active)return;const p=state.players[state.turn];if(state.bankrupt.has(state.turn)||criticalStats(p).length)return;beep("card");if(!state.deck.length)state.deck=shuffle(state.discard.splice(0));state.active=state.deck.pop();renderCard()}
+function recover(kind){if(state.locked)return;state.locked=true;const p=state.players[state.turn];const effects={capital:{capital:6,estabilidad:-4,bienestar:-2},empleo:{empleo:6,capital:-4,produccion:-2},bienestar:{bienestar:6,capital:-4,influencia:-2},ambiente:{ambiente:6,capital:-4,produccion:-2}}[kind];apply(p,effects);const action={round:state.round,name:p.name,card:"Medida de recuperación",choice:"Recuperar "+DEFS[statKeys().indexOf(kind)],effects,global:false};state.history.unshift(action);state.decisionLog.push(action);beep("good");const newly=checkBankruptcies();renderCompanies();renderHistory();newly.forEach(i=>showBankruptcy(i));document.getElementById("cardArea").innerHTML=`<div class="card reveal" style="justify-content:center;text-align:center"><div class="icon">🛠️</div><h2>Medida aplicada</h2><p><b>${p.name}</b> logró estabilizar temporalmente su empresa.</p><p>${fmtEffects(effects)}</p><button class="primary" id="next">Continuar</button></div>`;document.getElementById("next").onclick=nextTurn;}
+function apply(p,e){for(const [k,v] of Object.entries(e)){if(k in p)p[k]=clamp(p[k]+v)}}
+function choose(i){
+if(state.locked||!state.active)return;state.locked=true;
+const c=state.active,o=c[5][i],global=c[1].includes("global");
+if(global)state.players.forEach(p=>apply(p,o[1]));else apply(state.players[state.turn],o[1]);
+const newly=checkBankruptcies();
+const action={round:state.round,name:state.players[state.turn].name,card:c[3],choice:o[0],effects:o[1],global}; state.history.unshift(action); state.decisionLog.push(action); beep("click");
+state.discard.push(c);state.active=null;renderCompanies();renderHistory();newly.forEach(i=>showBankruptcy(i));
+const n=state.players[state.turn].name;
+document.getElementById("cardArea").innerHTML=`<div class="card" style="justify-content:center;text-align:center"><div class="icon">✅</div><h2>Decisión aplicada</h2><p><b>${n}</b> eligió: ${o[0]}</p><p>${fmtEffects(o[1])}</p><button class="primary" id="next">Continuar</button></div>`;
+document.getElementById("next").onclick=nextTurn;
+}
+function nextTurn(){
+state.locked=false;
+let guard=0;
+while(guard<state.players.length){state.turn++;if(state.turn>=state.players.length){state.turn=0;state.round++;state.history=[];}if(state.round>state.rounds){finish();return}if(!state.bankrupt.has(state.turn))break;guard++;}
+if(state.round>state.rounds){finish();return}
+renderGame();
+}
+function renderHistory(){
+document.getElementById("history").innerHTML=state.history.map(x=>`<div class="log"><b>Ronda ${x.round} — ${x.name}</b><br>${x.card}<br><span>${x.choice}</span><br>${x.global?"🌐 Global · ":""}${fmtEffects(x.effects)}</div>`).join("");
+}
+function rules(){
+document.getElementById("app").insertAdjacentHTML("beforeend",`<div class="modal" id="modal"><div class="panel"><h2>📖 Reglas y guía del juego</h2>
+
+<h3>📝 Reseña</h3>
+<p><b>Capitalismo: El juego</b> es una simulación educativa de competencia entre empresas. Todas las empresas participan en el mismo mercado y deben tomar decisiones para crecer, producir, conseguir recursos, adaptarse a cambios económicos y mantener su posición frente a las demás.</p>
+<p>Como en un juego de conquista de posiciones, cada empresa intenta fortalecer su lugar dentro del mercado. Sin embargo, no se trata solamente de ganar dinero: las decisiones también tienen consecuencias sobre el empleo, el bienestar social, el ambiente, la influencia y la estabilidad.</p>
+
+<h3>🎯 Objetivo principal</h3>
+<p>El objetivo es <b>convertirse en la empresa con el mejor desempeño al finalizar la partida</b>. Para lograrlo, cada jugador debe tomar decisiones estratégicas y buscar un equilibrio entre crecimiento económico y sus consecuencias sociales y ambientales.</p>
+
+<h3>🏪 ¿Cómo funciona la competencia?</h3>
+<ul>
+<li>Todas las empresas compiten dentro del <b>mismo mercado</b>.</li>
+<li>Las empresas buscan atraer oportunidades, aumentar su producción y fortalecer su <b>influencia</b>.</li>
+<li>En esta versión, <b>los clientes no se transfieren directamente</b> de una empresa a otra. La competencia por el mercado se representa mediante las oportunidades, la producción, la influencia y el resultado final.</li>
+<li>Por lo tanto, que una empresa mejore su posición no significa automáticamente que otra pierda clientes, aunque las empresas sí compiten por las mismas oportunidades económicas.</li>
+</ul>
+
+<h3>🎲 Reglas</h3>
+<ol>
+<li>Todos los jugadores comienzan con los mismos valores iniciales.</li>
+<li>En cada turno, el jugador roba una carta y debe elegir <b>una sola opción</b>.</li>
+<li>La decisión elegida modifica uno o varios indicadores de la empresa.</li>
+<li>Cada decisión tiene ventajas y desventajas: una opción puede aumentar el capital, pero reducir el empleo, el bienestar, el ambiente o la estabilidad.</li>
+<li>Las cartas de eventos globales afectan a todas las empresas cuando se activan.</li>
+<li>Todos comparten el mismo mazo. Cuando se termina, las cartas descartadas se mezclan nuevamente.</li>
+<li>Los indicadores tienen un límite de <b>0 a 50</b>.</li>
+<li>Los jugadores pueden analizar y justificar su decisión antes de elegirla.</li>
+<li>Una ronda termina cuando todas las empresas tuvieron un turno.</li>
+<li>La partida termina cuando se completan las rondas elegidas al comienzo.</li>
+</ol>
+
+<h3>⚠️ Crisis y quiebra</h3>
+<ul><li>Los indicadores van de <b>0 a 50</b>. Si una empresa llega a <b>0 en cualquier indicador</b>, entra en crisis y no puede robar cartas normales.</li><li>En crisis aparece una <b>medida de recuperación</b> que permite subir un indicador a cambio de reducir otros recursos.</li><li>Si una empresa acumula <b>3 o más indicadores en 3 puntos o menos</b>, quiebra.</li><li>Cuando una empresa quiebra, aparece un aviso explicando los motivos. <b>Las demás empresas siguen jugando</b> y la empresa quebrada simplemente es saltada cuando llega su turno.</li><li>Una quiebra no termina la partida para los demás jugadores.</li></ul>
+
+<h3>🧠 ¿Cómo tomar las decisiones?</h3>
+<p>Antes de elegir una opción, el jugador debe preguntarse:</p>
+<ul>
+<li>¿Esta decisión aumenta o reduce mi capital?</li>
+<li>¿Qué pasará con el empleo y la producción?</li>
+<li>¿Cómo afectará al bienestar social?</li>
+<li>¿Qué impacto tendrá sobre el ambiente?</li>
+<li>¿Me ayudará a fortalecer mi influencia en el mercado?</li>
+<li>¿Puede afectar la estabilidad de mi empresa?</li>
+<li>¿El beneficio inmediato puede generar un problema a largo plazo?</li>
+</ul>
+
+<h3>🏆 ¿Quién gana?</h3>
+<p>Gana la empresa que obtiene el <b>mayor puntaje final</b>. El juego no premia solamente tener más dinero: el puntaje combina los distintos indicadores para representar un desempeño económico y social más completo.</p>
+
+<h3>📊 ¿Qué da puntaje?</h3>
+<p>El puntaje final se calcula de esta manera:</p>
+<p><b>1,3 × Capital + Empleo + Producción + 1,1 × Bienestar + 1,1 × Ambiente + 0,7 × Influencia + Estabilidad.</b></p>
+<p>Por eso, una empresa puede tener mucho capital y aun así perder si descuida demasiado otros aspectos. La estrategia consiste en encontrar el mejor equilibrio posible.</p>
+
+<button class="primary" onclick="document.getElementById('modal').remove()">Cerrar</button></div></div>`);
+}
+function allBankruptFinish(){
+beep("bad");
+document.getElementById("app").innerHTML=`<div class="screen setup"><div class="panel">
+<div class="icon">💥</div><h1>Fin de la partida</h1>
+<h2>¡No quedó ninguna empresa en pie!</h2>
+<p><b>Felicitaciones...</b> lograron el increíble resultado de hacer quebrar a todas las empresas. 😂</p>
+<p>El mercado quedó patas para arriba y ninguna empresa consiguió sobrevivir.</p>
+<div class="final-company" style="margin:20px 0"><h3>📉 Resultado</h3>
+<p>La partida termina porque <b>todas las empresas quebraron</b>.</p>
+<p>Moraleja: crecer importa... pero <b>sobrevivir también</b>. 😌</p></div>
+<button class="primary" id="backHome">Volver a la pantalla inicial</button>
+</div></div>`;
+document.getElementById("backHome").onclick=setup;
+}
+function finish(){
+const results=state.players.map((p,i)=>({...p,score:score(p),i})).sort((a,b)=>b.score-a.score);
+const top=results[0], tied=results.filter(x=>x.score===top.score);
+beep("win");
+const stats=["capital","empleo","produccion","bienestar","ambiente","influencia","estabilidad"];
+const statsHtml=results.map(p=>`<div class="final-company ${p.score===top.score?"winner":""}">
+<h3>${p.score===top.score?"🏆 ":""}${p.name}</h3><div class="final-score">${p.score} puntos</div>
+${stats.map((k,j)=>`<div class="final-stat"><div class="statline"><span>${ICONS[j]} ${DEFS[j]}</span><b>${p[k]}</b></div><div class="bar"><div class="fill" style="width:${p[k]*2}%"></div></div></div>`).join("")}
+</div>`).join("");
+const actions=[...state.decisionLog].sort((a,b)=>a.round-b.round || state.players.findIndex(p=>p.name===a.name)-state.players.findIndex(p=>p.name===b.name));
+const actionsHtml=actions.length?actions.map(a=>`<tr><td><b>Ronda ${a.round}</b></td><td><b>${a.name}</b></td><td>${a.card}</td><td>${a.global?"🌐 ":""}${a.choice}</td><td>${fmtEffects(a.effects)}</td></tr>`).join(""):`<tr><td colspan="5">No hay decisiones registradas.</td></tr>`;
+document.getElementById("app").innerHTML=`<div class="screen setup"><div class="panel">
+<div class="icon final-trophy">🏆</div><h1>Fin de la partida</h1>
+<h2>${tied.length>1?"¡Empate!":`Ganó ${top.name}`}</h2><p>Puntuación: <b>${top.score}</b></p><p class="muted">Incluye los puntos obtenidos en eventos económicos y minijuegos.</p>
+<h2>📊 Estado final de cada empresa</h2><div class="final-stats">${statsHtml}</div>
+<div class="actions-box"><h2>📋 Comparación de acciones</h2><p>Repasá las decisiones de cada empresa y compará sus estrategias a lo largo de la partida.</p>
+<table class="actions-table"><thead><tr><th>Ronda</th><th>Empresa</th><th>Situación</th><th>Decisión</th><th>Efectos</th></tr></thead><tbody>${actionsHtml}</tbody></table></div>
+<h2>🏅 Ranking final</h2><div>${results.map((p,i)=>`<div class="rank"><b>#${i+1}</b><span>${p.name}</span><strong>${p.score} pts</strong></div>`).join("")}</div>
+<button class="primary" id="again">Volver a la pantalla inicial</button></div></div>`;
+document.getElementById("again").onclick=setup;
+}
+setup();
+</script>
+</body></html>
